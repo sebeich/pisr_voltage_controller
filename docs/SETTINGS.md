@@ -68,9 +68,26 @@ The cost is J = w_P ΣΔP² + w_Q ΣΔQ² + λ·max(0, \|V\|max − V_limit)², 
 
 ## Timing measurement (Sec. V-C)
 
-- **`experiments/V-C_offline_control_fig9/run.sh`** prints three numbers:
-  - the median optimization time per test sample
-  - the number of objective evaluations
-  - the time per evaluation
-- **Single-input PISR inference** (all target equations, one input vector) is measured with BenchmarkTools `@belapsed`.
-- **`run.sh speed`** repeats the identical optimization with `runpp` as the inner voltage model. The calls go through the local HTTP solver service, so the request overhead is included.
+**Fair benchmark:** `experiments/V-C_offline_control_fig9/run.sh bench`
+
+- Both voltage models are evaluated in-process, one input vector at a time, on the same 100 test inputs (`data/offline/test_data_complex_blockrand.csv`), on the same machine.
+- Each input is warmed up, then timed repeatedly. The median per input is reported, and the median over the inputs is reported.
+- **PISR, Julia** (`benchmark_pisr.jl`):
+  - Evaluates all target equations of `models/offline_highvar` and returns max \|V\| with `eval_tree_array`. This is the path the controllers use.
+  - Measured with BenchmarkTools `@belapsed`.
+  - For reference it also times the high-level `MLJ.predict` on a one-row table.
+- **PISR, Python** (in `benchmark_powerflow.py`): the same equations, exported from Julia, are evaluated as plain Python complex arithmetic. This removes the language difference to pandapower. The script checks that the values match the Julia results.
+- **AC power flow** (`benchmark_powerflow.py`):
+  - `pp.runpp` on the speed-baseline network (`src/services/powerflow_solver_api.py`), with the settings from the power-flow table: NR, flat start, 1e-7 MVA, 30 iterations, voltage angles, Q limits, numba.
+  - Only the `runpp` call is timed, so there is no HTTP request and no network copy. pandapower's internal model build and result write are included, because every optimizer evaluation pays for them.
+- **Output:** `results/V-C_offline_control_fig9/benchmark_summary.json` with the per-evaluation times and three speed-ups:
+  - Python vs. Python
+  - Julia PISR vs. pandapower
+  - Julia `MLJ.predict` vs. pandapower
+
+  It also records the \|V\|max deviation between PISR and the power flow.
+
+**Optimization runs:** `run.sh` (PISR) and `run.sh speed`.
+
+- They report the median optimization time per test sample, the number of objective evaluations and the time per evaluation.
+- In `run.sh speed` every evaluation is a request to the local HTTP solver service. Its per-evaluation time therefore includes the request overhead and must not be used as the speed comparison; use `run.sh bench` for that.

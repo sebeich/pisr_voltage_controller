@@ -1,0 +1,11 @@
+{
+ "pisr_julia_median_us": 4.6111249999999995,
+ "pisr_python_median_us": 18.956895000883378,
+ "pisr_julia_mlj_predict_median_us": 54.948,
+ "runpp_median_ms": 11.883198751093005,
+ "speedup_python_vs_python": 626.8536461556207,
+ "speedup_julia_lowlevel": 2577.07148496148,
+ "speedup_julia_mlj_predict": 216.2626255931609,
+ "max_abs_vmax_error_pu": 0.0013186472121475834,
+ "mean_abs_vmax_error_pu": 0.0006351050804934411
+}

@@ -1,7 +1,10 @@
 .venv/
 __pycache__/
 *.pyc
-# regenerated outputs
-results/
+# generated outputs: results/ is committed (paper reference outputs) except logs and
+# uncompressed raw recordings (shipped as .csv.gz)
+results/**/*.log
+results/V-D_long_run_fig11_table2/random_samples.csv
+results/V-D_long_run_fig11_table2/controller_comparison/*.csv
 # private notes
 PAPER_TODO.md

@@ -59,7 +59,8 @@ src/
   pisr/                              PISR training (Algorithm 1), data collection over the API, cross-evaluation
   controllers/                       PISR and sensitivity controllers (online), offline optimization (Fig. 9)
 experiments/<section>_<figure>/      one driver per paper result
-results/                             generated outputs (git-ignored)
+results/                             reference outputs of the re-run (figures, stats .json, data); large raw
+                                     recordings as .csv.gz, logs not included. Re-running overwrites them.
 ```
 
 ### Components (Section III)
@@ -122,11 +123,16 @@ experiments/V-B_training_robustness_fig8/run.sh collect     # collect 10 new dat
 
 ```bash
 experiments/V-C_offline_control_fig9/run.sh         # Fig. 9 + PISR timing
-experiments/V-C_offline_control_fig9/run.sh speed   # identical optimization with pandapower runpp as inner model
+experiments/V-C_offline_control_fig9/run.sh bench   # fair per-evaluation benchmark PISR vs. pandapower runpp (in-process)
+experiments/V-C_offline_control_fig9/run.sh speed   # identical optimization with pandapower runpp as inner model (via HTTP)
 ```
 
 - `mpc_noslack.jl` optimizes every test sample with the `offline_highvar` model. `plot_fig9.py` then re-solves the AC power flow with the optimized setpoints to obtain the actual controlled voltage. As in the paper, the plotted bus is 57, the highest-voltage bus.
-- Both runs print `[timing]` lines with the optimization time and the time per objective evaluation, i.e. per PISR inference or per power-flow solve. The `speed` run calls the power flow over a local HTTP service, so its per-solve time includes the request overhead.
+- `bench` is the speed comparison:
+  - PISR and pandapower `runpp` are evaluated in-process, one input at a time, on the same 100 test inputs.
+  - PISR is timed both in Julia, as used by the controllers, and as plain Python, the same runtime as pandapower.
+  - The results are in `results/V-C_offline_control_fig9/benchmark_summary.json`. Details are in [docs/SETTINGS.md](docs/SETTINGS.md#timing-measurement-sec-v-c).
+- `run.sh` and `run.sh speed` print `[timing]` lines for the full optimization. `speed` calls the power flow over a local HTTP service, so its per-solve time includes request overhead and is not a fair comparison.
 
 ### Sec. V-D — online resilience (Fig. 10)
 
@@ -187,7 +193,7 @@ These values come from re-running the repository on a 32-thread Linux workstatio
 |---|---|---|
 | Fig. 8 off-diagonal magnitude MAE | 3.5e-4 – 2.7e-3 p.u. | identical (all 100 pairs) |
 | Fig. 9 controlled max \|V57\| | 1.0514 | 1.0514 |
-| Time per objective evaluation, PISR / runpp | ~6 µs / ~10 ms | 7.2 µs / 32.9 ms (runpp incl. local HTTP) |
+| Time per evaluation, PISR / `runpp` (in-process, `run.sh bench`) | ~6 µs / ~10 ms, ~2000× | Julia 4.6 µs / 11.9 ms, 2577×; Python vs. Python 19 µs / 11.9 ms, 627× |
 | Table 2 mean voltage error / RMSE | −0.00043 / 0.00180 p.u. | −0.00046 / 0.00183 p.u. |
 | Table 2 max overvoltage | 0.01055 p.u. | 0.01180 p.u. |
 | Table 2 mean ΣΔP / ΣΔQ | 0.58 kW / 61.8 kvar | 0.45 kW / 62.0 kvar |

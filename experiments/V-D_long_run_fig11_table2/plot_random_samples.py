@@ -122,6 +122,11 @@ def variant_statistics(samples):
     }
 
 
+def _rel(path):
+    path = Path(path).resolve()
+    return str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--csv', type=Path, default=OUT_DIR / 'random_samples.csv')
@@ -138,7 +143,10 @@ def main(argv=None):
     if args.comparison_dir:
         parts = []
         for filename, label in (('off.csv', 'Controller OFF'), ('on.csv', 'PISR ON')):
-            part = pd.read_csv(args.comparison_dir / filename)
+            path = args.comparison_dir / filename
+            if not path.exists() and path.with_suffix('.csv.gz').exists():
+                path = path.with_suffix('.csv.gz')   # compressed copy as shipped in the repository
+            part = pd.read_csv(path)
             if part.empty:
                 parser.error(f'{filename} contains no samples')
             part['run'] = label
@@ -155,6 +163,8 @@ def main(argv=None):
                 if not plan.get(f'{phase}_complete'):
                     print(f'Warning: {phase.upper()} recording is not marked complete; plotting available samples only.')
     else:
+        if not args.csv.exists() and Path(f'{args.csv}.gz').exists():
+            args.csv = Path(f'{args.csv}.gz')        # compressed copy as shipped in the repository
         df = pd.read_csv(args.csv)
     if df.empty:
         parser.error('The CSV contains no samples')
@@ -215,11 +225,11 @@ def main(argv=None):
     if max_time > 0:
         axes[2].set_xlim(0, max_time)
     fig.tight_layout(pad=0.8, h_pad=0.6)
-    stem = args.out if args.out else args.csv.with_suffix('')
+    stem = args.out if args.out else Path(str(args.csv).removesuffix('.gz')).with_suffix('')
     stem.parent.mkdir(parents=True, exist_ok=True)
     stats_path = Path(f'{stem}.stats.json')
     stats_path.write_text(json.dumps({
-        'source_csv': [str((args.comparison_dir / f).resolve()) for f in ('off.csv', 'on.csv')] if args.comparison_dir else str(args.csv.resolve()),
+        'source_csv': [_rel(args.comparison_dir / f) for f in ('off.csv', 'on.csv')] if args.comparison_dir else _rel(args.csv),
         'voltage_limit_pu': 1.05,
         'violation_block_samples': 5,
         'definitions': {

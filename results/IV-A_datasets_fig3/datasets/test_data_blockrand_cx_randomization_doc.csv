@@ -1,0 +1,6 @@
+load,p_col,q_col,start_idx,end_idx
+1,P_node1,Q_node1,16,31
+2,P_node2,Q_node2,32,47
+3,P_node3,Q_node3,48,63
+4,P_node4,Q_node4,64,79
+5,P_node5,Q_node5,80,95

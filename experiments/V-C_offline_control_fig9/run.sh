@@ -2,7 +2,8 @@
 # Section V-C: offline control efficacy (Fig. 9) and computational speed.
 #
 #   experiments/V-C_offline_control_fig9/run.sh            # PISR optimization on the test set + Fig. 9 (~2 min)
-#   experiments/V-C_offline_control_fig9/run.sh speed      # same optimization with pandapower runpp as inner model
+#   experiments/V-C_offline_control_fig9/run.sh bench      # fair per-evaluation benchmark PISR vs. pandapower (in-process)
+#   experiments/V-C_offline_control_fig9/run.sh speed      # same optimization with pandapower runpp as inner model (via HTTP)
 #
 # pisr:  src/controllers/mpc_noslack.jl, model models/offline_highvar (high-variability training set),
 #        cost (1) with w_P = 30, penalty 1e4, |dQ| <= 0.1 Mvar, 0 <= dP <= 0.1 MW, BlackBoxOptim DE,
@@ -23,6 +24,9 @@ case "${1:-pisr}" in
     (cd "$OUT/pisr" && "${JL[@]}" "$ROOT_DIR/src/controllers/mpc_noslack.jl") 2>&1 | tee "$OUT/pisr/mpc_noslack.log"
     "$PY" "$EXP/plot_fig9.py" --controlled "$OUT/pisr/updated_powers_controlled_complex.csv" --out "$OUT"
     grep '\[timing\]' "$OUT/pisr/mpc_noslack.log" ;;
+  bench)
+    "${JL[@]}" "$EXP/benchmark_pisr.jl" "$ROOT_DIR/$OUT/benchmark_pisr.json"
+    "$PY" "$EXP/benchmark_powerflow.py" --out "$OUT/benchmark_powerflow.json" ;;
   speed)
     mkdir -p "$OUT/powerflow"
     PORT="${PORT:-8001}"
@@ -31,5 +35,5 @@ case "${1:-pisr}" in
     (cd "$OUT/powerflow" && SOLVER_URL="http://127.0.0.1:${PORT}/solve" "${JL[@]}" "$ROOT_DIR/src/controllers/mpc_powerflow.jl") \
       2>&1 | tee "$OUT/powerflow/mpc_powerflow.log"
     grep '\[timing\]' "$OUT/pisr/mpc_noslack.log" "$OUT/powerflow/mpc_powerflow.log" || true ;;
-  *) echo "usage: $0 {pisr|speed}" >&2; exit 2 ;;
+  *) echo "usage: $0 {pisr|bench|speed}" >&2; exit 2 ;;
 esac
