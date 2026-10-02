@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+# regenerated outputs
+results/
+# private notes
+PAPER_TODO.md
