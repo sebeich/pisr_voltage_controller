@@ -1,5 +1,5 @@
 {
-  "source_csv": "results/V-D_long_run_fig11_table2/random_samples.csv.gz",
+  "source_csv": "results/V-D_long_run_fig11_table2/random_samples.csv",
   "voltage_limit_pu": 1.05,
   "violation_block_samples": 5,
   "definitions": {

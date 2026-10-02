@@ -31,6 +31,7 @@ def plot_heatmap(df: pd.DataFrame, metric: str, out_dir: Path):
     fig.colorbar(im, ax=ax).set_label(LABELS[metric])
     fig.savefig(out_dir / f"cross_eval_heatmap_{metric}.png", dpi=180)
     fig.savefig(out_dir / f"cross_eval_heatmap_{metric}.svg")
+    fig.savefig(out_dir / f"cross_eval_heatmap_{metric}.eps")
     plt.close(fig)
 
 

@@ -53,11 +53,19 @@ function max_abs_v_mlj(x::Vector{ComplexF64})
 end
 
 max_abs_v(X[1]); max_abs_v_mlj(X[1])          # compile
-t_low = [@belapsed max_abs_v($x) seconds=0.2 for x in X]
-t_mlj = [@belapsed max_abs_v_mlj($x) seconds=0.2 for x in X]
+t_low = [median(@benchmark max_abs_v($x) seconds=0.2).time / 1e9 for x in X]     # median per input, in s
+t_mlj = [median(@benchmark max_abs_v_mlj($x) seconds=0.2).time / 1e9 for x in X]
 vmax = [max_abs_v(x) for x in X]
 
+env = Dict(
+    "cpu" => Sys.cpu_info()[1].model, "logical_cpus" => Sys.CPU_THREADS,
+    "memory_gb" => round(Sys.total_memory() / 2^30, digits=1), "os" => string(Sys.KERNEL, " ", Sys.MACHINE),
+    "julia" => string(VERSION), "julia_threads" => Threads.nthreads(),
+    "SymbolicRegression" => string(pkgversion(SymbolicRegression)), "BenchmarkTools" => string(pkgversion(BenchmarkTools)),
+    "timed_process" => "single Julia task, single-threaded evaluation, BenchmarkTools @benchmark, median per input",
+)
 res = Dict(
+    "environment" => env,
     "model" => relpath(MODEL_PATH, ROOT), "n_inputs" => length(inputs), "n_equations" => length(eqs),
     "n_samples" => length(X), "threads" => Threads.nthreads(),
     "lowlevel_median_s" => median(t_low), "lowlevel_p05_s" => quantile(t_low, 0.05), "lowlevel_p95_s" => quantile(t_low, 0.95),

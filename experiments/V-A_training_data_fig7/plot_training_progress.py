@@ -61,7 +61,7 @@ def main():
         ax1.plot(it_corr, df_corr['mean_mag_mae'], marker='o', linestyle='-', label='Correlated mean MAE')
     if 'worst_mag_max' in df_var.columns:
         ax1.plot(it_var, df_var['mean_mag_mae'], marker='s', linestyle='--', label='High-variability mean MAE')
-    ax1.set_ylabel('Mean MAE (p.u.)')
+    ax1.set_ylabel('Mean MAE in p.u.')
     ax1.set_xlabel('Training iterations')
     ax1.grid(True)
     ax1.legend(fontsize='small')

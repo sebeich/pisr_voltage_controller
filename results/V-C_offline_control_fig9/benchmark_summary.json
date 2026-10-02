@@ -1,11 +1,35 @@
 {
- "pisr_julia_median_us": 4.6111249999999995,
- "pisr_python_median_us": 18.956895000883378,
- "pisr_julia_mlj_predict_median_us": 54.948,
- "runpp_median_ms": 11.883198751093005,
- "speedup_python_vs_python": 626.8536461556207,
- "speedup_julia_lowlevel": 2577.07148496148,
- "speedup_julia_mlj_predict": 216.2626255931609,
+ "pisr_julia_median_us": 2.2158333333333333,
+ "pisr_python_median_us": 7.562635000795125,
+ "pisr_julia_mlj_predict_median_us": 34.2995,
+ "runpp_median_ms": 4.674910750509298,
+ "speedup_python_vs_python": 618.1589816271425,
+ "speedup_julia_lowlevel": 2109.7754421252944,
+ "speedup_julia_mlj_predict": 136.29676090057575,
  "max_abs_vmax_error_pu": 0.0013186472121475834,
- "mean_abs_vmax_error_pu": 0.0006351050804934411
+ "mean_abs_vmax_error_pu": 0.0006351050804934411,
+ "environment": {
+  "cpu": "AMD RYZEN AI MAX+ PRO 395 w/ Radeon 8060S",
+  "logical_cpus": 32,
+  "memory_gb": 31.1,
+  "cpu_governor": "performance",
+  "os": "Linux-6.17.0-1032-oem-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "pandapower": "3.4.0",
+  "numba": "0.65.1",
+  "numpy": "2.3.5",
+  "scipy": "1.16.3",
+  "timed_process": "single Python process, single thread, no other benchmark running in parallel"
+ },
+ "pisr_environment": {
+  "julia_threads": 32,
+  "logical_cpus": 32,
+  "memory_gb": 31.1,
+  "julia": "1.12.6",
+  "cpu": "AMD RYZEN AI MAX+ PRO 395 w/ Radeon 8060S",
+  "timed_process": "single Julia task, single-threaded evaluation, BenchmarkTools @benchmark, median per input",
+  "BenchmarkTools": "1.6.3",
+  "SymbolicRegression": "1.12.0",
+  "os": "Linux x86_64-linux-gnu"
+ }
 }

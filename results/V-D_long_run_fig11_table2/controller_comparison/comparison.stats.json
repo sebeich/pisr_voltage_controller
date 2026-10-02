@@ -1,0 +1,194 @@
+{
+  "source_csv": [
+    "results/V-D_long_run_fig11_table2/controller_comparison/off.csv",
+    "results/V-D_long_run_fig11_table2/controller_comparison/on.csv"
+  ],
+  "voltage_limit_pu": 1.05,
+  "violation_block_samples": 5,
+  "definitions": {
+    "violation_error": "max(max_voltage - 1.05, 0) p.u.; blocked violations become zero. Mean and RMSE use all samples. error_during_violations_pu uses only positive, unsuppressed errors.",
+    "voltage_error": "max_voltage - 1.05; statistics are sample-weighted",
+    "violation_block": "Suppress violations at each baseline active-power change sample and the next four samples. Overlapping blocks merge. Q-only changes do not trigger blocking. Voltage data and plotted curves remain unchanged.",
+    "violation_fraction": "Violation count divided by ALL recorded samples in both variants; blocking suppresses violations without shrinking the denominator.",
+    "active_power_change_tolerance_mw": 1e-08,
+    "control": "Total adjustments on controlled buses, MW/MVAr, original API signs"
+  },
+  "runs": {
+    "Controller OFF": {
+      "high_sampling": {
+        "sample_count": 71709,
+        "voltage_error_pu": {
+          "count": 71709,
+          "mean": 0.017519269450095642,
+          "std": 0.01133776186708763,
+          "min": -0.024537632124650433,
+          "max": 0.05173896585654303,
+          "p95": 0.03519768650323618
+        },
+        "voltage_mae_pu": 0.018120446922655593,
+        "voltage_rmse_pu": 0.02086790948369867,
+        "overvoltage_pu": {
+          "count": 71709,
+          "mean": 0.017819858186375617,
+          "std": 0.010730935022254712,
+          "min": 0.0,
+          "max": 0.05173896585654303,
+          "p95": 0.03519768650323618
+        },
+        "violation_fraction": 0.9385293338353624,
+        "dP_mw": {
+          "count": 71709,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "p95": 0.0
+        },
+        "dQ_mvar": {
+          "count": 71709,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "p95": 0.0
+        }
+      },
+      "violation_comparison": {
+        "sample_count": 71709,
+        "active_power_change_count": 3593,
+        "blocked_sample_count": 17963,
+        "suppressed_violation_count": 16859,
+        "without_block": {
+          "violation_count": 67301,
+          "violation_fraction": 0.9385293338353624,
+          "violation_error_pu": {
+            "count": 71709,
+            "mean": 0.017819858186375617,
+            "std": 0.010730935022254712,
+            "min": 0.0,
+            "max": 0.05173896585654303,
+            "p95": 0.03519768650323618
+          },
+          "violation_error_rmse_pu": 0.020801449762802373,
+          "error_during_violations_pu": {
+            "count": 67301,
+            "mean": 0.018987001837815324,
+            "std": 0.010026692294870203,
+            "min": 1.5397597167510213e-05,
+            "max": 0.05173896585654303,
+            "p95": 0.03561342714271065
+          }
+        },
+        "with_5_sample_block": {
+          "violation_count": 50442,
+          "violation_fraction": 0.7034263481571351,
+          "violation_error_pu": {
+            "count": 71709,
+            "mean": 0.013354611056288627,
+            "std": 0.012080066589025936,
+            "min": 0.0,
+            "max": 0.05173896585654303,
+            "p95": 0.03377642794973745
+          },
+          "violation_error_rmse_pu": 0.018007599652925626,
+          "error_during_violations_pu": {
+            "count": 50442,
+            "mean": 0.0189850879076048,
+            "std": 0.010027863574102172,
+            "min": 1.5397597167510213e-05,
+            "max": 0.05173896585654303,
+            "p95": 0.0356394221397196
+          }
+        }
+      }
+    },
+    "PISR ON": {
+      "high_sampling": {
+        "sample_count": 71709,
+        "voltage_error_pu": {
+          "count": 71709,
+          "mean": -0.0005585464613407594,
+          "std": 0.0020946647776941513,
+          "min": -0.06363134121268321,
+          "max": 0.012098788883163625,
+          "p95": 0.0005264006385433808
+        },
+        "voltage_mae_pu": 0.0008873002938395744,
+        "voltage_rmse_pu": 0.00216785485685476,
+        "overvoltage_pu": {
+          "count": 71709,
+          "mean": 0.0001643769162494075,
+          "std": 0.0008218220526543503,
+          "min": 0.0,
+          "max": 0.012098788883163625,
+          "p95": 0.0005264006385433808
+        },
+        "violation_fraction": 0.4268780766709897,
+        "dP_mw": {
+          "count": 71709,
+          "mean": 0.0003018682719261021,
+          "std": 0.0009845533506730245,
+          "min": 0.0,
+          "max": 0.1360478815514531,
+          "p95": 0.0019605659279301074
+        },
+        "dQ_mvar": {
+          "count": 71709,
+          "mean": 0.053217473854687475,
+          "std": 0.03245882420843001,
+          "min": -0.0009868626167414,
+          "max": 0.1649610563709938,
+          "p95": 0.1069117507686711
+        }
+      },
+      "violation_comparison": {
+        "sample_count": 71709,
+        "active_power_change_count": 3592,
+        "blocked_sample_count": 17960,
+        "suppressed_violation_count": 7352,
+        "without_block": {
+          "violation_count": 30611,
+          "violation_fraction": 0.4268780766709897,
+          "violation_error_pu": {
+            "count": 71709,
+            "mean": 0.0001643769162494075,
+            "std": 0.0008218220526543503,
+            "min": 0.0,
+            "max": 0.012098788883163625,
+            "p95": 0.0005264006385433808
+          },
+          "violation_error_rmse_pu": 0.0008380997892999823,
+          "error_during_violations_pu": {
+            "count": 30611,
+            "mean": 0.0003850675994684513,
+            "std": 0.0012235947098204998,
+            "min": 2.1469492850201277e-10,
+            "max": 0.012098788883163625,
+            "p95": 0.002816134913569024
+          }
+        },
+        "with_5_sample_block": {
+          "violation_count": 23259,
+          "violation_fraction": 0.32435259172488806,
+          "violation_error_pu": {
+            "count": 71709,
+            "mean": 8.285070522221478e-06,
+            "std": 7.592613003406559e-05,
+            "min": 0.0,
+            "max": 0.007760148271215073,
+            "p95": 2.7123985150145913e-05
+          },
+          "violation_error_rmse_pu": 7.63768264299324e-05,
+          "error_during_violations_pu": {
+            "count": 23259,
+            "mean": 2.5543407802484197e-05,
+            "std": 0.00013165236021006428,
+            "min": 2.1469492850201277e-10,
+            "max": 0.007760148271215073,
+            "p95": 0.00010434505410750181
+          }
+        }
+      }
+    }
+  }
+}

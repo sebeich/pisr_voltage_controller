@@ -1,4 +1,17 @@
 {
+ "environment": {
+  "cpu": "AMD RYZEN AI MAX+ PRO 395 w/ Radeon 8060S",
+  "logical_cpus": 32,
+  "memory_gb": 31.1,
+  "cpu_governor": "performance",
+  "os": "Linux-6.17.0-1032-oem-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "pandapower": "3.4.0",
+  "numba": "0.65.1",
+  "numpy": "2.3.5",
+  "scipy": "1.16.3",
+  "timed_process": "single Python process, single thread, no other benchmark running in parallel"
+ },
  "n_samples": 100,
  "reps": 20,
  "settings": {
@@ -10,9 +23,11 @@
   "tolerance_mva": 1e-07,
   "numba": true
  },
- "runpp_median_s": 0.011883198751093005,
- "runpp_p05_s": 0.011724661048810958,
- "runpp_p95_s": 0.012132815375480277,
+ "network": "CoSES LV grid, src/services/powerflow_solver_api.py:create_net_from_excel",
+ "warm_start": "none: init='flat' on every solve, no result/Ybus recycling",
+ "runpp_median_s": 0.004674910750509298,
+ "runpp_p05_s": 0.004642764798063581,
+ "runpp_p95_s": 0.00471858905029876,
  "vmax_pf": [
   1.0589776911935995,
   1.0618707211669782,

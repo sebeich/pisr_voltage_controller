@@ -59,6 +59,7 @@ src/
   pisr/                              PISR training (Algorithm 1), data collection over the API, cross-evaluation
   controllers/                       PISR and sensitivity controllers (online), offline optimization (Fig. 9)
 experiments/<section>_<figure>/      one driver per paper result
+paper_figures/                       all paper figures as EPS, original file names (experiments/collect_paper_figures.sh)
 results/                             reference outputs of the re-run (figures, stats .json, data); large raw
                                      recordings as .csv.gz, logs not included. Re-running overwrites them.
 ```
@@ -131,7 +132,7 @@ experiments/V-C_offline_control_fig9/run.sh speed   # identical optimization wit
 - `bench` is the speed comparison:
   - PISR and pandapower `runpp` are evaluated in-process, one input at a time, on the same 100 test inputs.
   - PISR is timed both in Julia, as used by the controllers, and as plain Python, the same runtime as pandapower.
-  - The results are in `results/V-C_offline_control_fig9/benchmark_summary.json`. Details are in [docs/SETTINGS.md](docs/SETTINGS.md#timing-measurement-sec-v-c).
+  - The results are in `results/V-C_offline_control_fig9/benchmark_summary.json`. Baseline, warm-start, timing method and hardware are documented in [docs/SPEED_BENCHMARK.md](docs/SPEED_BENCHMARK.md).
 - `run.sh` and `run.sh speed` print `[timing]` lines for the full optimization. `speed` calls the power flow over a local HTTP service, so its per-solve time includes request overhead and is not a fair comparison.
 
 ### Sec. V-D — online resilience (Fig. 10)
@@ -162,7 +163,7 @@ T2_DURATION=60 FIG11_DURATION=60 experiments/V-D_long_run_fig11_table2/run.sh al
   - `high_sampling.voltage_error_pu.mean`, `voltage_rmse_pu` and `overvoltage_pu.max`
   - `violation_comparison.without_block.error_during_violations_pu`
   - `high_sampling.dP_mw` / `dQ_mvar` means
-- Fig. 11 replays the full 3600-row table starting at row 1000 (wrapping around) once without and once with the controller.
+- Fig. 11 replays the full 3600-row table starting at row 1000 (wrapping around) once without and once with the controller, about 72 000 samples per phase. Its statistics are in `results/V-D_long_run_fig11_table2/controller_comparison/comparison.stats.json`; the raw recordings are shipped as `off.csv.gz` / `on.csv.gz`.
 
 ### Sec. V-E — PHiL laboratory validation (Figs. 12, 13)
 
@@ -193,10 +194,12 @@ These values come from re-running the repository on a 32-thread Linux workstatio
 |---|---|---|
 | Fig. 8 off-diagonal magnitude MAE | 3.5e-4 – 2.7e-3 p.u. | identical (all 100 pairs) |
 | Fig. 9 controlled max \|V57\| | 1.0514 | 1.0514 |
-| Time per evaluation, PISR / `runpp` (in-process, `run.sh bench`) | ~6 µs / ~10 ms, ~2000× | Julia 4.6 µs / 11.9 ms, 2577×; Python vs. Python 19 µs / 11.9 ms, 627× |
+| Time per evaluation, PISR / `runpp` (in-process, `run.sh bench`) | ~6 µs / ~10 ms, ~2000× | Julia 2.2 µs / 4.67 ms, 2110×; Python vs. Python 618× |
 | Table 2 mean voltage error / RMSE | −0.00043 / 0.00180 p.u. | −0.00046 / 0.00183 p.u. |
 | Table 2 max overvoltage | 0.01055 p.u. | 0.01180 p.u. |
 | Table 2 mean ΣΔP / ΣΔQ | 0.58 kW / 61.8 kvar | 0.45 kW / 62.0 kvar |
+| Fig. 11 comparison run (3600 s), PISR ON: mean error / RMSE / max overvoltage | −0.00053 / 0.00215 / 0.01210 p.u. | -0.00056 / 0.00217 / 0.01210 p.u. |
+| Fig. 10 | controllers at 5 Hz | re-run at 10 Hz (see `results/V-D_online_resilience_fig10/`) |
 
 ## Determinism
 

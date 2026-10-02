@@ -252,7 +252,7 @@ def save_and_plot(all_runs: Dict[str, pd.DataFrame], out_dir: str = BASE_OUT, br
         #    # annotate on bottom subplot
         #    ax2.annotate(lab, xy=(bt, y2_top), xytext=(bt, y2_top*0.995), rotation=90,
         #                va='top', ha='right', fontsize=8, color='gray', backgroundcolor='white')
-    ax2.set_ylabel('Total ΔP in kW\n(step + control)')
+    ax2.set_ylabel('Total ΔP in kW')
     ax2.legend(fontsize='small',loc='upper right')
     ax2.grid(True)
 
@@ -270,7 +270,7 @@ def save_and_plot(all_runs: Dict[str, pd.DataFrame], out_dir: str = BASE_OUT, br
         for bt in break_times:
             ax3.axvline(bt, color='blue', linestyle='--', linewidth=1)
 
-    ax3.set_ylabel('Total ΔQ in kvar\n(step + control)')
+    ax3.set_ylabel('Total ΔQ in kvar')
     ax3.legend(fontsize='small',loc='upper right')
     ax3.grid(True)
 

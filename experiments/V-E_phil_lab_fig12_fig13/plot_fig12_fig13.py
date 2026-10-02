@@ -46,20 +46,20 @@ def plot_test_data(df, out_stem: Path, figsize, sr, voltage_limit=None, enables=
     for c in vcols:
         axes[0].plot(df.index, df[c] / (np.sqrt(2) * 230), label=c)
     if voltage_limit is not None:
-        axes[0].axhline(y=voltage_limit, color="r", linestyle="--", label=f"Voltage Limit {voltage_limit} p.u.")
-    axes[0].set_ylabel("Voltage in p.u.")
+        axes[0].axhline(y=voltage_limit, color="r", linestyle="--", label="Voltage Limit")
+    axes[0].set_ylabel("Max voltage in p.u.")
 
     for c in pcols:
         axes[1].plot(df.index, df[c] * 3 / 1000, label=c, alpha=0.9)
     for c in p_pv:
         axes[1].plot(df.index, df[c] / 1000, label=c, alpha=0.9)
-    axes[1].set_ylabel("Active Power in kW")
+    axes[1].set_ylabel("Active power in kW")
 
     for c in qcols:
         axes[2].plot(df.index, df[c] * 3 / 1000, label=c)
     for c in q_pv:
         axes[2].plot(df.index, df[c] / 1000, label=c)
-    axes[2].set_ylabel("Reactive Power in kvar")
+    axes[2].set_ylabel("Reactive power in kvar")
 
     for ax in axes:
         ax.legend(loc="upper left", fontsize="small")

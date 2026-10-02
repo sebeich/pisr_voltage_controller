@@ -68,6 +68,8 @@ The cost is J = w_P ΣΔP² + w_Q ΣΔQ² + λ·max(0, \|V\|max − V_limit)², 
 
 ## Timing measurement (Sec. V-C)
 
+Full description with hardware and software versions: [SPEED_BENCHMARK.md](SPEED_BENCHMARK.md).
+
 **Fair benchmark:** `experiments/V-C_offline_control_fig9/run.sh bench`
 
 - Both voltage models are evaluated in-process, one input vector at a time, on the same 100 test inputs (`data/offline/test_data_complex_blockrand.csv`), on the same machine.
