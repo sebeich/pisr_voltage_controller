@@ -2,7 +2,7 @@
 
 Code, data and trained models for
 
-> S. Eichhorn, A. Mohapatra, R. Tonkoski, **"Fast, Interpretable, and Agnostic: PISR Voltage Control on a Low-Voltage Grid"** — preprint: [doi:10.5281/zenodo.17395966](https://zenodo.org/records/17395966)
+> S. Eichhorn, A. Mohapatra, R. Tonkoski, **"Fast, Interpretable, and Agnostic: PISR Voltage Control on a Low-Voltage Grid"**
 
 The repository follows the structure of the paper. Section III (the controller) is in `src/`.
 Every result of Sections IV and V has one folder in `experiments/` and writes to the folder of the same name in `results/`.
@@ -215,21 +215,7 @@ These values come from re-running the repository on a 32-thread Linux workstatio
 
 ## Citation
 
-Until the journal version is published, please cite the preprint:
-
-> S. Eichhorn, A. Mohapatra, R. Tonkoski, "Fast, Interpretable, and Agnostic - PISR Voltage Control on a Low-Voltage Grid", preprint, Zenodo, 2025. doi:[10.5281/zenodo.17395966](https://zenodo.org/records/17395966)
-
-```bibtex
-@misc{eichhorn2025pisrcontrol,
-  author    = {Eichhorn, Sebastian and Mohapatra, Anurag and Tonkoski, Reinaldo},
-  title     = {Fast, Interpretable, and Agnostic - {PISR} Voltage Control on a Low-Voltage Grid},
-  year      = {2025},
-  publisher = {Zenodo},
-  doi       = {10.5281/zenodo.17395966},
-  url       = {https://zenodo.org/records/17395966},
-  note      = {Preprint}
-}
-```
+Citation details will be added once the paper is published.
 
 PISR itself was introduced in: S. Eichhorn, A. Mohapatra, C. Goebel, "PISR: Physics-Informed Symbolic Regression for Predicting Power System Voltage", ACM e-Energy 2025, doi:10.1145/3679240.3734622.
 
