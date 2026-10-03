@@ -10,6 +10,8 @@ Input: the NI VeriStand logger exports of the PHiL test on 2025-10-07 (data/lab/
 
 Voltages are phase-peak values (S_EU_Mag_A / (sqrt(2) * 230 V)); amplifier powers are per phase (x3).
 """
+import os
+os.environ.setdefault("SOURCE_DATE_EPOCH", "0")  # reproducible EPS files (no creation timestamp)
 import argparse
 from pathlib import Path
 

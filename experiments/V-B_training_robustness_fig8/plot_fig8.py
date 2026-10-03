@@ -5,6 +5,8 @@
 
 Also prints the per-model off-diagonal mean MAE ranges quoted in Section V-B.
 """
+import os
+os.environ.setdefault("SOURCE_DATE_EPOCH", "0")  # reproducible EPS files (no creation timestamp)
 import argparse
 from pathlib import Path
 

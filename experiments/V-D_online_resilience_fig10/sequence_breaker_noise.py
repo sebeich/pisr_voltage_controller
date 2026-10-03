@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import os
+os.environ.setdefault("SOURCE_DATE_EPOCH", "0")  # reproducible EPS files (no creation timestamp)
+import os
 import time
 import argparse
 import requests

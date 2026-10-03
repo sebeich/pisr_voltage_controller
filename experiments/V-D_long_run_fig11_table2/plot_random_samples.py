@@ -10,6 +10,8 @@ Power totals include every S<bus>_complex column
 This script only reads the CSV; it does not contact the API.
 """
 from __future__ import annotations
+import os
+os.environ.setdefault("SOURCE_DATE_EPOCH", "0")  # reproducible EPS files (no creation timestamp)
 
 import argparse
 import json

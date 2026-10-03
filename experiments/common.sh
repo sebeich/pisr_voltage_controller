@@ -28,8 +28,9 @@ stop_pid() {
 
 cleanup_bg() {
   for pid in "${_bg_pids[@]:-}"; do
-    [[ -n "$pid" ]] && stop_pid "$pid"
+    if [[ -n "$pid" ]]; then stop_pid "$pid"; fi
   done
+  return 0
 }
 trap cleanup_bg EXIT INT TERM
 

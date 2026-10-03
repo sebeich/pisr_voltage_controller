@@ -10,6 +10,8 @@ plots them against the uncontrolled test set and the PISR prediction.
 
 Plotted is the maximum over the prosumer buses (bus 57 in every test sample).
 """
+import os
+os.environ.setdefault("SOURCE_DATE_EPOCH", "0")  # reproducible EPS files (no creation timestamp)
 import argparse
 import sys
 from pathlib import Path

@@ -3,6 +3,8 @@
 
     .venv/bin/python experiments/IV-A_datasets_fig3/plot_fig3.py [--data data/offline]
 """
+import os
+os.environ.setdefault("SOURCE_DATE_EPOCH", "0")  # reproducible EPS files (no creation timestamp)
 import argparse
 import sys
 from pathlib import Path
