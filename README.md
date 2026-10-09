@@ -15,7 +15,7 @@ Every result of Sections IV and V has one folder in `experiments/` and writes to
 | Sec. V-B, Fig. 8 | 10×10 cross-evaluation | `experiments/V-B_training_robustness_fig8` | `experiments/V-B_training_robustness_fig8/run.sh plot` | seconds |
 | Sec. V-C, Fig. 9 + speed | offline optimization, PISR vs. power flow | `experiments/V-C_offline_control_fig9` | `experiments/V-C_offline_control_fig9/run.sh` | ~2 min |
 | Sec. V-D, Fig. 10 | CIL: disturbance, topology change, noise | `experiments/V-D_online_resilience_fig10` | `experiments/V-D_online_resilience_fig10/run.sh` | ~5 min |
-| Sec. V-D, Fig. 11, Table 2 | long randomized CIL run | `experiments/V-D_long_run_fig11_table2` | `experiments/V-D_long_run_fig11_table2/run.sh all` | ~2.5 h |
+| Sec. V-D, Fig. 11, Table 3 | long randomized CIL run | `experiments/V-D_long_run_fig11_table2` | `experiments/V-D_long_run_fig11_table2/run.sh all` | ~2.5 h |
 | Sec. V-E, Figs. 12–13 | PHiL laboratory validation | `experiments/V-E_phil_lab_fig12_fig13` | `experiments/V-E_phil_lab_fig12_fig13/run.sh` (from the lab recordings) | seconds |
 
 All commands are run from the repository root. Every solver, optimizer and training setting is listed in [docs/SETTINGS.md](docs/SETTINGS.md).
@@ -50,7 +50,7 @@ models/                              trained PISR models used in the paper
   offline_correlated/, offline_highvar/   Fig. 7 (offline_highvar is also the Fig. 9 model)
   cross_eval/runs/run_01..run_10/         Fig. 8: datasets collected over the REST API + one model each
                                           (run_09 is the PISR model of Fig. 10)
-  cil_longrun/                            Fig. 11 / Table 2 model; its training data also identifies
+  cil_longrun/                            Fig. 11 / Table 3 model; its training data also identifies
                                           the sensitivity benchmark of Fig. 10
   phil_lab/                               PHiL model used in the lab + its training data collected on the hardware
 src/
@@ -67,17 +67,18 @@ results/                             reference outputs of the re-run (figures, s
 ### Components (Section III)
 
 - **PISR surrogate:** `src/pisr/incremental_noslack.jl` for the offline models, and `src/pisr/incremental_rt.jl` for models trained on data collected over the API.
-  - `MultitargetSRRegressor` with the binary operators `+ - * /`, the custom operators `line_current(V, S) = conj(S/V)` and `voltage_drop(I, Z) = I*Z` (`src/pisr/incwrap_ops.jl`), `maxsize = 30` and `npopulations = 3 × (CPU threads − 2)`.
+  - `MultitargetSRRegressor` with the binary operators `+ - * /`, the custom operators `line_current(V, S) = conj(S/V)` and `voltage_drop(I, Z) = I*Z` (`src/pisr/incwrap_ops.jl`; algebraically identical to `*` for complex arguments, so the effective operator set equals Algorithm 1 of the paper), `maxsize = 30` and `npopulations = 3 × (CPU threads − 2)`.
   - Training is incremental: 20 iterations first, then 100 more per step up to 1020. The test MAE is recorded after every step.
 - **Self-learning over the REST API:** `src/pisr/collect_and_train_from_api.jl` perturbs the controllable inverters with random setpoints, records complex powers and voltages, and trains the model.
 - **Online controller (cost function (1)):**
   - `src/controllers/rt_controller_showerror_routed.jl` (Fig. 10) and `rt_controller_showerror.jl` (Fig. 11) poll `/state`, predict `|V|max` with PISR and minimise `w_P ΣΔP² + ΣΔQ² + λ max(0, |V|max − 1.05)²` with differential evolution (BlackBoxOptim), using `w_P = 30`.
   - They post ΔP/ΔQ for the controllable buses 55, 57 and 64.
-- **Sensitivity benchmark:** `src/controllers/rt_sensitivity_traindata_routed.jl`, a robust voltage-sensitivity controller in the style of [5], [26].
+  - The control decision is open-loop: it uses only the PISR prediction from the power injections. Measured voltages are read for monitoring and logging only.
+- **Sensitivity benchmark:** `src/controllers/rt_sensitivity_traindata_routed.jl`, a robust voltage-sensitivity controller in the style of Gupta et al.
   - It is identified from the same training data and minimises the same cost.
 - **Digital twin** (`src/services/`):
   - `realtime_powerflow_service_routed_apicontrolled.py` is used for Figs. 8 and 10. It has a control router (none / sensitivity / pisr), breaker K4 (Q1 in the paper) and measurement noise.
-  - `realtime_powerflow_service_with_noise.py` plus `_row_api.py` are used for Fig. 11 and Table 2.
+  - `realtime_powerflow_service_with_noise.py` plus `_row_api.py` are used for Fig. 11 and Table 3.
   - All of them run a scenario loop at 1 Hz and a power-flow loop at 20 Hz.
   - `powerflow_solver_api.py` provides one AC power flow per request, as the baseline for the speed comparison.
 
@@ -149,21 +150,22 @@ experiments/V-D_online_resilience_fig10/run.sh
 - The controllers run at 10 Hz (`LOOP_PERIOD_S=0.1`, optimizer budget 0.05 s) and the plant at 20 Hz. Settings are in `controller_params.env`.
 - To run the stack interactively, start `run_routed_stack.sh` and open `http://127.0.0.1:8012/ui`.
 
-### Sec. V-D — long randomized run (Fig. 11, Table 2)
+### Sec. V-D — long randomized run (Fig. 11, Table 3)
 
 ```bash
-experiments/V-D_long_run_fig11_table2/run.sh table2   # 1000 s PISR run -> Table 2   (~17 min)
-experiments/V-D_long_run_fig11_table2/run.sh fig11    # 3600 s OFF + 3600 s ON  -> Fig. 11 (~2 h)
+experiments/V-D_long_run_fig11_table2/run.sh table2   # 1000 s PISR run (initial-submission table)   (~17 min)
+experiments/V-D_long_run_fig11_table2/run.sh fig11    # 3600 s OFF + 3600 s ON  -> Fig. 11, Table 3 (~2 h)
 experiments/V-D_long_run_fig11_table2/run.sh plot     # re-plot existing recordings
 T2_DURATION=60 FIG11_DURATION=60 experiments/V-D_long_run_fig11_table2/run.sh all   # smoke test
 ```
 
 - Setup: a −40 kW offset on uncontrolled bus 61, measurement noise off, breaker open. The scenario rows advance at 1 Hz, which gives one random P/Q event per second at the uncontrolled nodes.
-- Table 2 uses rows 799–1799. Its values are under `runs.PISR` in `results/V-D_long_run_fig11_table2/random_samples.stats.json`:
+- Fig. 11 replays the full 3600-row table starting at row 1000 (wrapping around) once without and once with the controller, about 72 000 samples per phase. Its statistics are in `results/V-D_long_run_fig11_table2/controller_comparison/comparison.stats.json`; the raw recordings are shipped as `off.csv.gz` / `on.csv.gz`.
+- Table 3 of the paper is computed from this Fig. 11 comparison run. Its values are under `runs["PISR ON"]` in `comparison.stats.json`; `runs["Controller OFF"]` gives the uncontrolled baseline:
   - `high_sampling.voltage_error_pu.mean`, `voltage_rmse_pu` and `overvoltage_pu.max`
   - `violation_comparison.without_block.error_during_violations_pu`
   - `high_sampling.dP_mw` / `dQ_mvar` means
-- Fig. 11 replays the full 3600-row table starting at row 1000 (wrapping around) once without and once with the controller, about 72 000 samples per phase. Its statistics are in `results/V-D_long_run_fig11_table2/controller_comparison/comparison.stats.json`; the raw recordings are shipped as `off.csv.gz` / `on.csv.gz`.
+- `run.sh table2` is the 1000 s PISR run (rows 799–1799) used for the table of the initial submission. Its values are under `runs.PISR` in `results/V-D_long_run_fig11_table2/random_samples.stats.json`.
 
 ### Sec. V-E — PHiL laboratory validation (Figs. 12, 13)
 
@@ -190,15 +192,15 @@ The live experiment drives the CoSES laboratory hardware: an NI VeriStand gatewa
 
 These values come from re-running the repository on a 32-thread Linux workstation.
 
-| Result | Paper | Re-run |
+| Result | Initial submission | Re-run |
 |---|---|---|
 | Fig. 8 off-diagonal magnitude MAE | 3.5e-4 – 2.7e-3 p.u. | identical (all 100 pairs) |
 | Fig. 9 controlled max \|V57\| | 1.0514 | 1.0514 |
 | Time per evaluation, PISR / `runpp` (in-process, `run.sh bench`) | ~6 µs / ~10 ms, ~2000× | Julia 2.2 µs / 4.67 ms, 2110×; Python vs. Python 618× |
-| Table 2 mean voltage error / RMSE | −0.00043 / 0.00180 p.u. | −0.00046 / 0.00183 p.u. |
-| Table 2 max overvoltage | 0.01055 p.u. | 0.01180 p.u. |
-| Table 2 mean ΣΔP / ΣΔQ | 0.58 kW / 61.8 kvar | 0.45 kW / 62.0 kvar |
-| Fig. 11 comparison run (3600 s), PISR ON: mean error / RMSE / max overvoltage | −0.00053 / 0.00215 / 0.01210 p.u. | −0.00054 / 0.00214 / 0.01206 p.u. |
+| Initial-submission table (1000 s run) mean voltage error / RMSE | −0.00043 / 0.00180 p.u. | −0.00046 / 0.00183 p.u. |
+| Initial-submission table (1000 s run) max overvoltage | 0.01055 p.u. | 0.01180 p.u. |
+| Initial-submission table (1000 s run) mean ΣΔP / ΣΔQ | 0.58 kW / 61.8 kvar | 0.45 kW / 62.0 kvar |
+| Fig. 11 comparison run (3600 s), PISR ON: mean error / RMSE / max overvoltage (= Table 3 of the revised paper) | −0.00053 / 0.00215 / 0.01210 p.u. | −0.00027 / 0.00221 / 0.01281 p.u. (open-loop controller) |
 | Fig. 10 | controllers at 5 Hz | re-run at 10 Hz (see `results/V-D_online_resilience_fig10/`) |
 
 ## Determinism
@@ -209,7 +211,7 @@ These values come from re-running the repository on a 32-thread Linux workstatio
 
 ## Data
 
-- `data/grid/` describes the low-voltage grid of the CoSES laboratory at the Technical University of Munich [24].
+- `data/grid/` describes the low-voltage grid of the CoSES laboratory at the Technical University of Munich.
 - `data/lab/` contains the measurement channels recorded during the PHiL test on 2025-10-07: EGSTON amplifier P/Q setpoints and measurements, PV feed-in, and phase voltages.
 - All other data in `data/` and `models/` was generated with the code in this repository.
 

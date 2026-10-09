@@ -406,14 +406,11 @@ end
 last_success_z = nothing  # Vector{Float64} of length 2*length(controlled) when set
 was_enabled = false
 
-function optimize_once!(input_row_df::DataFrame; force_opt::Bool=false, meas_max::Float64=NaN, current_mods::Dict{Int,Tuple{Float64,Float64}}=Dict{Int,Tuple{Float64,Float64}}())
+function optimize_once!(input_row_df::DataFrame; current_mods::Dict{Int,Tuple{Float64,Float64}}=Dict{Int,Tuple{Float64,Float64}}())
     # Build fast input
     one_X_nt = build_one_sample_nt(input_row_df, Vector{Symbol}(input_syms))
     # Baseline |V|max
     base_max = _max_abs_predict!(one_X_nt)
-    # If measurements indicate a violation while prediction doesn't, shift the
-    # penalty using the observed gap so optimization still acts in the right direction.
-    gap = (isfinite(meas_max) && meas_max > base_max) ? (meas_max - base_max) : 0.0
 
     # Collect symbols and original values
     syms = Symbol.(string.(:S, controlled, :_complex))
@@ -424,10 +421,10 @@ function optimize_once!(input_row_df::DataFrame; force_opt::Bool=false, meas_max
         cur = get(current_mods, bus, (0.0, 0.0))
         push!(curP, cur[1]); push!(curQ, cur[2])
     end
-    base_vpen = max(0.0, (base_max + gap) - COMMON_LIMIT)
+    base_vpen = max(0.0, base_max - COMMON_LIMIT)
     base_cost = P_WEIGHT * sum(abs2, curP) + Q_WEIGHT * sum(abs2, curQ) + PENALTY * base_vpen^2
     # If under limit and no current mods, we can skip
-    if (!force_opt) && (base_max <= COMMON_LIMIT) && all(abs.(curP) .<= 1e-9) && all(abs.(curQ) .<= 1e-9)
+    if (base_max <= COMMON_LIMIT) && all(abs.(curP) .<= 1e-9) && all(abs.(curQ) .<= 1e-9)
         return Dict{Int,Tuple{Float64,Float64}}(), base_max, base_max, Dict{Int,Float64}(), base_cost
     end
 
@@ -450,7 +447,7 @@ function optimize_once!(input_row_df::DataFrame; force_opt::Bool=false, meas_max
         setup_var(z)
         # Fast bound via direct tree eval across targets
         max_abs_new = _max_abs_predict!(one_X_nt)
-        effective_max = max_abs_new + gap
+        effective_max = max_abs_new
         # costs
         cost_p = 0.0
         cost_q = 0.0
@@ -748,7 +745,7 @@ while true
     update_input_row_from_state!(input_row_df, st)
     # 2.1) Read current mods for relative updates
     current_mods = _extract_current_mods(st)
-    # 3) Measured magnitudes (from service) and decision to force optimization
+    # 3) Measured magnitudes (from service), used for monitoring only (open loop)
     volts_mag = get(st, "voltages_mag", Dict{String,Any}())
     meas_max = try
         # restrict to predicted buses for fair comparison
@@ -763,7 +760,6 @@ while true
     catch
         NaN
     end
-    force_opt = isfinite(meas_max) && meas_max > COMMON_LIMIT
     # Build SR prediction from the API "power" snapshot (this includes the
     # actually implemented dP/dQ returned by the service). Use this as the
     # predicted voltages shown in the UI so Pred(V) aligns with measurements.
@@ -781,11 +777,11 @@ while true
     catch err
         @warn "render_errors failed" err
     end
-    # 4) Optimize (force if measured violates)
-    deltas_pu, base_max, post_max, post_bus, controller_cost = optimize_once!(input_row_df; force_opt=force_opt, meas_max=meas_max, current_mods=current_mods)
+    # 4) Optimize on the PISR prediction only
+    deltas_pu, base_max, post_max, post_bus, controller_cost = optimize_once!(input_row_df; current_mods=current_mods)
     # 5) Post
     maybe_post_deltas!(deltas_pu, current_mods)
-    maybe_post_cost!(controller_cost; base_max=base_max, post_max=post_max, meas_max=meas_max, n_actions=length(deltas_pu), forced=force_opt)
+    maybe_post_cost!(controller_cost; base_max=base_max, post_max=post_max, meas_max=meas_max, n_actions=length(deltas_pu))
     # pre_bus was already computed from the API 'power' snapshot above and used for rendering
     # Debug: print SR inputs and state powers for controlled buses
     if DEBUG_SR_INPUTS

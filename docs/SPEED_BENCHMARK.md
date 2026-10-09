@@ -73,4 +73,4 @@ Measured on 2026-10-02 (`results/V-C_offline_control_fig9/benchmark_summary.json
 - The optimization runs `run.sh` (PISR) and `run.sh speed` (power flow) exercise the complete loop.
   - In `run.sh speed`, every power flow is a request to a local HTTP solver service. Its time per evaluation includes the request overhead, so it is not used for the speed-up.
   - The full optimization time also depends on the optimizer's wall-clock budget (`GLOB_MAXTIME`, see `docs/SETTINGS.md`).
-- The "up to 500×" quoted from [4] refers to the earlier PHiL prediction study and is not re-measured here.
+- The "up to 500×" quoted in the paper refers to the earlier PHiL prediction study and is not re-measured here.

@@ -37,7 +37,7 @@ Every value below is the default in the repository code. The experiment drivers 
 | Item | Value |
 |---|---|
 | Package | SymbolicRegression.jl 1.12.0 (`MultitargetSRRegressor` via MLJ 0.22) |
-| Binary operators | `+ - * /`, `line_current(V, S) = conj(S / V)`, `voltage_drop(I, Z) = I·Z` |
+| Binary operators | `+ - * /`, `line_current(V, S) = conj(S / V)`, `voltage_drop(I, Z) = I·Z` (algebraically identical to `*` for complex arguments, so the effective operator set equals Algorithm 1 of the paper) |
 | maxsize | 30 |
 | npopulations | 3 × (CPU threads − 2) |
 | Iterations | incremental: 20, then +100 per step until 1020 (`INITIAL_ITER = 20`, `STEP_ITER = 100`, `MAX_TOTAL_ITER = 1000/1020`) |
@@ -56,7 +56,7 @@ The cost is J = w_P ΣΔP² + w_Q ΣΔQ² + λ·max(0, \|V\|max − V_limit)², 
 | Speed baseline | `src/controllers/mpc_powerflow.jl` | 1e4 | ±0.1 | [0, 0.1] | 20 s per sample | offline |
 | Fig. 10, PISR | `src/controllers/rt_controller_showerror_routed.jl` | 1e10 | ±0.1 | ±0.3 | 0.05 s | 0.1 s |
 | Fig. 10, sensitivity | `src/controllers/rt_sensitivity_traindata_routed.jl` | 1e10 | ±0.1 | [0, 0.3] | 0.05 s | 0.1 s |
-| Fig. 11 / Table 2, PISR | `src/controllers/rt_controller_showerror.jl` | 1e4 | ±0.1 | ±0.3 | 0.02 s | 0.1 s |
+| Fig. 11 / Table 3, PISR | `src/controllers/rt_controller_showerror.jl` | 1e4 | ±0.1 | ±0.3 | 0.02 s | 0.1 s |
 | PHiL lab | `experiments/V-E_phil_lab_fig12_fig13/pisr_controller.jl` | 1e15 | ±3000 W | ±4000 W | 0.01 s | 0.1 s |
 
 - **Fig. 10 overrides:** the values come from `experiments/V-D_online_resilience_fig10/controller_params.env`, which sets `P_WEIGHT`, `Q_WEIGHT`, `PENALTY_W`, `PLIMIT`, `QLIMIT`, `COMMON_V_LIMIT`/`VMAX` and `GLOB_MAXTIME`.
