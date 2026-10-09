@@ -15,7 +15,7 @@ Every result of Sections IV and V has one folder in `experiments/` and writes to
 | Sec. V-B, Fig. 8 | 10×10 cross-evaluation | `experiments/V-B_training_robustness_fig8` | `experiments/V-B_training_robustness_fig8/run.sh plot` | seconds |
 | Sec. V-C, Fig. 9 + speed | offline optimization, PISR vs. power flow | `experiments/V-C_offline_control_fig9` | `experiments/V-C_offline_control_fig9/run.sh` | ~2 min |
 | Sec. V-D, Fig. 10 | CIL: disturbance, topology change, noise | `experiments/V-D_online_resilience_fig10` | `experiments/V-D_online_resilience_fig10/run.sh` | ~5 min |
-| Sec. V-D, Fig. 11, Table 3 | long randomized CIL run | `experiments/V-D_long_run_fig11_table2` | `experiments/V-D_long_run_fig11_table2/run.sh all` | ~2.5 h |
+| Sec. V-D, Fig. 11, Table 3 | long randomized CIL run | `experiments/V-D_long_run_fig11_table2` | `experiments/V-D_long_run_fig11_table2/run.sh fig11` | ~2 h |
 | Sec. V-E, Figs. 12–13 | PHiL laboratory validation | `experiments/V-E_phil_lab_fig12_fig13` | `experiments/V-E_phil_lab_fig12_fig13/run.sh` (from the lab recordings) | seconds |
 
 All commands are run from the repository root. Every solver, optimizer and training setting is listed in [docs/SETTINGS.md](docs/SETTINGS.md).
@@ -157,10 +157,9 @@ experiments/V-D_online_resilience_fig10/run.sh
 ### Sec. V-D — long randomized run (Fig. 11, Table 3)
 
 ```bash
-experiments/V-D_long_run_fig11_table2/run.sh table2   # 1000 s PISR run (initial-submission table)   (~17 min)
 experiments/V-D_long_run_fig11_table2/run.sh fig11    # 3600 s OFF + 3600 s ON  -> Fig. 11, Table 3 (~2 h)
-experiments/V-D_long_run_fig11_table2/run.sh plot     # re-plot existing recordings
-T2_DURATION=60 FIG11_DURATION=60 experiments/V-D_long_run_fig11_table2/run.sh all   # smoke test
+experiments/V-D_long_run_fig11_table2/run.sh plot     # re-plot the shipped recordings
+FIG11_DURATION=60 experiments/V-D_long_run_fig11_table2/run.sh fig11   # smoke test
 ```
 
 - Setup: a −40 kW offset on uncontrolled bus 61, measurement noise off, breaker open. The scenario rows advance at 1 Hz, which gives one random P/Q event per second at the uncontrolled nodes.
@@ -169,7 +168,6 @@ T2_DURATION=60 FIG11_DURATION=60 experiments/V-D_long_run_fig11_table2/run.sh al
   - `high_sampling.voltage_error_pu.mean`, `voltage_rmse_pu` and `overvoltage_pu.max`
   - `violation_comparison.without_block.error_during_violations_pu`
   - `high_sampling.dP_mw` / `dQ_mvar` means
-- `run.sh table2` is the 1000 s PISR run (rows 799–1799) used for the table of the initial submission. Its values are under `runs.PISR` in `results/V-D_long_run_fig11_table2/random_samples.stats.json`.
 
 ### Sec. V-E — PHiL laboratory validation (Figs. 12, 13)
 
@@ -201,9 +199,6 @@ These values come from re-running the repository on a 32-thread Linux workstatio
 | Fig. 8 off-diagonal magnitude MAE | 3.5e-4 – 2.7e-3 p.u. | identical (all 100 pairs) |
 | Fig. 9 controlled max \|V57\| | 1.0514 | 1.0514 |
 | Time per evaluation, PISR / `runpp` (in-process, `run.sh bench`) | ~6 µs / ~10 ms, ~2000× | Julia 2.2 µs / 4.67 ms, 2110×; Python vs. Python 618× |
-| Initial-submission table (1000 s run) mean voltage error / RMSE | −0.00043 / 0.00180 p.u. | −0.00046 / 0.00183 p.u. |
-| Initial-submission table (1000 s run) max overvoltage | 0.01055 p.u. | 0.01180 p.u. |
-| Initial-submission table (1000 s run) mean ΣΔP / ΣΔQ | 0.58 kW / 61.8 kvar | 0.45 kW / 62.0 kvar |
 | Fig. 11 comparison run (3600 s), PISR ON: mean error / RMSE / max overvoltage (= Table 3 of the revised paper) | −0.00053 / 0.00215 / 0.01210 p.u. | −0.00027 / 0.00221 / 0.01281 p.u. (open-loop controller) |
 | Fig. 10 | controllers at 5 Hz | re-run at 10 Hz with the open-loop PISR controller (see `results/V-D_online_resilience_fig10/`) |
 

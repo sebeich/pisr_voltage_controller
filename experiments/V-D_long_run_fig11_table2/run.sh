@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Section V-D, long randomized run: Table 2 and Fig. 11.
+# Section V-D, long randomized run: Fig. 11 and Table 3.
 #
-#   experiments/V-D_long_run_fig11_table2/run.sh table2   # ~17 min  -> Table 2
-#   experiments/V-D_long_run_fig11_table2/run.sh fig11    # ~2 h     -> Fig. 11
+#   experiments/V-D_long_run_fig11_table2/run.sh fig11    # ~2 h     -> Fig. 11, Table 3
 #   experiments/V-D_long_run_fig11_table2/run.sh plot     # re-plot existing recordings only
 #
 # Setup reproduced from the paper recordings:
@@ -10,9 +9,8 @@
 #     (scenario rows advance at 1 Hz -> one random P/Q event per second at the uncontrolled nodes)
 #   * fixed -40 kW offset on uncontrolled bus 61, measurement noise off, breaker open (radial)
 #   * PISR controller: src/controllers/rt_controller_showerror.jl with models/cil_longrun
-#   * Table 2: PISR only, scenario rows 799..1799 (1000 s, ~19 948 samples at 20 Hz)
-#   * Fig. 11: controller OFF, then PISR ON, replaying the same rows from row 1000 for 3600 s
-# Override durations with T2_DURATION / FIG11_DURATION (seconds) for a quick smoke test.
+#   * Fig. 11 / Table 3: controller OFF, then PISR ON, replaying the same rows from row 1000 for 3600 s
+# Override the duration with FIG11_DURATION (seconds) for a quick smoke test.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../common.sh"
 
@@ -21,8 +19,6 @@ OUT=results/V-D_long_run_fig11_table2
 PORT="${PORT:-8000}"
 BASE="http://127.0.0.1:${PORT}"
 export PF_BASE_URL="$BASE"
-T2_DURATION="${T2_DURATION:-1000}"
-T2_START_ROW="${T2_START_ROW:-799}"
 FIG11_DURATION="${FIG11_DURATION:-3600}"
 FIG11_START_ROW="${FIG11_START_ROW:-1000}"
 mkdir -p "$OUT"
@@ -58,13 +54,6 @@ stop_controller() {
   reset_operating_point   # remove the last setpoints the controller left behind
 }
 
-run_table2() {
-  start_controller table2
-  api POST "$BASE/scenario/row" "{\"row\":${T2_START_ROW},\"frozen\":false}" >/dev/null
-  "$PY" "$EXP/record_random_samples.py" --base-url "$BASE" --duration "$T2_DURATION" --out "$OUT/random_samples.csv"
-  stop_controller
-}
-
 run_fig11() {
   "$PY" "$EXP/record_controller_comparison.py" --base-url "$BASE" --phase off \
     --duration "$FIG11_DURATION" --start-row "$FIG11_START_ROW" --out "$OUT/controller_comparison"
@@ -74,16 +63,13 @@ run_fig11() {
 }
 
 plot_all() {
-  [[ -f "$OUT/random_samples.csv" || -f "$OUT/random_samples.csv.gz" ]] && "$PY" "$EXP/plot_random_samples.py" --csv "$OUT/random_samples.csv" --no-show
   [[ -f "$OUT/controller_comparison/on.csv" || -f "$OUT/controller_comparison/on.csv.gz" ]] && "$PY" "$EXP/plot_controller_comparison.py" --no-show
   return 0
 }
 
-case "${1:-all}" in
-  table2) start_service; run_table2; plot_all ;;
-  fig11)  start_service; run_fig11;  plot_all ;;
-  all)    start_service; run_table2; run_fig11; plot_all ;;
-  plot)   plot_all ;;
-  *) echo "usage: $0 {table2|fig11|all|plot}" >&2; exit 2 ;;
+case "${1:-fig11}" in
+  fig11) start_service; run_fig11; plot_all ;;
+  plot)  plot_all ;;
+  *) echo "usage: $0 {fig11|plot}" >&2; exit 2 ;;
 esac
-echo "[V-D] Table 2 values: runs.PISR in $OUT/random_samples.stats.json; Fig. 11: $OUT/controller_comparison/comparison.{eps,png}"
+echo "[V-D] Fig. 11: $OUT/controller_comparison/comparison.{eps,png}; Table 3 values: runs[\"PISR ON\"] in $OUT/controller_comparison/comparison.stats.json"
