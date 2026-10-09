@@ -113,12 +113,13 @@ experiments/V-B_training_robustness_fig8/run.sh crosseval   # re-evaluate the 10
 experiments/V-B_training_robustness_fig8/run.sh collect     # collect 10 new datasets + train 10 models (hours)
 ```
 
-- `collect` starts the digital twin and calls `batch_collect_and_train.sh`. Each run uses:
+- `collect` starts the digital twin (measurement noise off, breaker K4 closed, i.e. ring topology, as at service start-up) and calls `batch_collect_and_train.sh`. Each run uses:
   - seed 4242 + 1000·i
   - perturbation magnitudes drawn from U(15, 80) kW/kvar
   - a random scenario start row
   - 50 training and 30 test samples
 - The parameters of each paper run are in `models/cross_eval/manifest.csv` and `models/cross_eval/runs/run_XX/run_config.env`.
+- The Fig. 8 datasets are therefore ring-topology data. The PISR model of Figs. 10 and 11 is `models/cil_longrun` instead (radial, see below).
 
 ### Sec. V-C — offline control and computational speed (Fig. 9)
 
@@ -147,6 +148,9 @@ experiments/V-D_online_resilience_fig10/run.sh
   2. breaker Q1/K4 closed (ring)
   3. radial again with Gaussian measurement noise (σ = 5·10⁻³ p.u. per voltage component)
 - PISR uses the radial-topology model `models/cil_longrun`; the sensitivity benchmark is identified from the same training data.
+  - Its data (50 training / 20 test samples) was collected over the REST API from the digital twin in radial topology (breaker K4 open) with measurement noise off.
+  - Retrain it from the shipped data (output in `results/training/`):
+    `julia --project=. --threads auto src/pisr/incremental_rt.jl TRAIN_CSV=models/cil_longrun/train_data_complex.csv TEST_CSV=models/cil_longrun/test_data_complex_blockrand.csv SLACK_BUS_ID=7 MAX_TOTAL_ITER=1020`
 - The controllers run at 10 Hz (`LOOP_PERIOD_S=0.1`, optimizer budget 0.05 s) and the plant at 20 Hz. Settings are in `controller_params.env`.
 - To run the stack interactively, start `run_routed_stack.sh` and open `http://127.0.0.1:8012/ui`.
 

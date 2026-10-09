@@ -74,8 +74,8 @@ run_fig11() {
 }
 
 plot_all() {
-  [[ -f "$OUT/random_samples.csv" ]] && "$PY" "$EXP/plot_random_samples.py" --csv "$OUT/random_samples.csv" --no-show
-  [[ -f "$OUT/controller_comparison/on.csv" ]] && "$PY" "$EXP/plot_controller_comparison.py" --no-show
+  [[ -f "$OUT/random_samples.csv" || -f "$OUT/random_samples.csv.gz" ]] && "$PY" "$EXP/plot_random_samples.py" --csv "$OUT/random_samples.csv" --no-show
+  [[ -f "$OUT/controller_comparison/on.csv" || -f "$OUT/controller_comparison/on.csv.gz" ]] && "$PY" "$EXP/plot_controller_comparison.py" --no-show
   return 0
 }
 
