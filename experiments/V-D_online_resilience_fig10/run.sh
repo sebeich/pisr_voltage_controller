@@ -4,7 +4,7 @@
 #   experiments/V-D_online_resilience_fig10/run.sh          # ~5 min incl. Julia compilation
 #
 # 1. run_routed_stack.sh starts the routed digital twin (port 8012, 20 Hz PF, 1 Hz scenarios)
-#    plus the PISR controller (models/cross_eval/runs/run_09) and the sensitivity benchmark
+#    plus the PISR controller (models/cil_longrun) and the sensitivity benchmark
 #    (identified from models/cil_longrun/train_data_complex.csv), and warms both up.
 # 2. sequence_breaker_noise.py switches /control_router to none -> sensitivity -> pisr and, for
 #    each, records three 5 s phases with the dP=-50 kW, dQ=-50 kvar step on bus 61 (t=1..3 s):

@@ -25,7 +25,7 @@ using JSON3
 
 # ---------------- Configuration ----------------
 const REPO_ROOT = normpath(joinpath(@__DIR__, "..", ".."))
-const DEFAULT_MODEL_PATH = get(ENV, "MODEL_PATH", joinpath(REPO_ROOT, "models", "cross_eval", "runs", "run_09", "training", "final_model_iter1020.jls"))
+const DEFAULT_MODEL_PATH = get(ENV, "MODEL_PATH", joinpath(REPO_ROOT, "models", "cil_longrun", "final_model_iter1020.jls"))
 
 const PF_BASE_URL = get(ENV, "PF_BASE_URL", "http://127.0.0.1:8000")
 const CONTROLLER_SOURCE = "pisr"

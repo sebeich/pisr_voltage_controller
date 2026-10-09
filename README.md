@@ -49,9 +49,8 @@ data/
 models/                              trained PISR models used in the paper
   offline_correlated/, offline_highvar/   Fig. 7 (offline_highvar is also the Fig. 9 model)
   cross_eval/runs/run_01..run_10/         Fig. 8: datasets collected over the REST API + one model each
-                                          (run_09 is the PISR model of Fig. 10)
-  cil_longrun/                            Fig. 11 / Table 3 model; its training data also identifies
-                                          the sensitivity benchmark of Fig. 10
+  cil_longrun/                            PISR model of Figs. 10 and 11 / Table 3; its training data also
+                                          identifies the sensitivity benchmark of Fig. 10
   phil_lab/                               PHiL model used in the lab + its training data collected on the hardware
 src/
   grid/coses_net.py                  pandapower model of the CoSES grid (offline experiments)
@@ -147,6 +146,7 @@ experiments/V-D_online_resilience_fig10/run.sh
   1. baseline, radial
   2. breaker Q1/K4 closed (ring)
   3. radial again with Gaussian measurement noise (σ = 5·10⁻³ p.u. per voltage component)
+- PISR uses the radial-topology model `models/cil_longrun`; the sensitivity benchmark is identified from the same training data.
 - The controllers run at 10 Hz (`LOOP_PERIOD_S=0.1`, optimizer budget 0.05 s) and the plant at 20 Hz. Settings are in `controller_params.env`.
 - To run the stack interactively, start `run_routed_stack.sh` and open `http://127.0.0.1:8012/ui`.
 
