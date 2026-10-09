@@ -201,7 +201,7 @@ These values come from re-running the repository on a 32-thread Linux workstatio
 | Initial-submission table (1000 s run) max overvoltage | 0.01055 p.u. | 0.01180 p.u. |
 | Initial-submission table (1000 s run) mean ΣΔP / ΣΔQ | 0.58 kW / 61.8 kvar | 0.45 kW / 62.0 kvar |
 | Fig. 11 comparison run (3600 s), PISR ON: mean error / RMSE / max overvoltage (= Table 3 of the revised paper) | −0.00053 / 0.00215 / 0.01210 p.u. | −0.00027 / 0.00221 / 0.01281 p.u. (open-loop controller) |
-| Fig. 10 | controllers at 5 Hz | re-run at 10 Hz (see `results/V-D_online_resilience_fig10/`) |
+| Fig. 10 | controllers at 5 Hz | re-run at 10 Hz with the open-loop PISR controller (see `results/V-D_online_resilience_fig10/`) |
 
 ## Determinism
 
