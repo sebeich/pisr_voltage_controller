@@ -1,0 +1,9 @@
+Incremental Training Summary
+============================
+Final Iterations: 1020
+Final Mean Mag MAE: 0.001277
+Final Worst Mag Max: 0.009726
+Final Mean Ang MAE: 0.001220
+Final Worst Ang Max: 0.006383
+Worst Bus Final: 3
+Threshold: 0.001000  (Reached: false)

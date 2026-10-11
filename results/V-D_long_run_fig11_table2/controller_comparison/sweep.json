@@ -1,0 +1,21 @@
+{
+  "base_url": "http://127.0.0.1:8000",
+  "rate": 20,
+  "start_row": 1000,
+  "duration": 3600.0,
+  "scenario_rate_hz": 1.0,
+  "n_rows": 3600,
+  "sweep_mode": "natural",
+  "breaker": {
+    "name": "K4",
+    "present": true,
+    "closed": false
+  },
+  "off_complete": true,
+  "noise": {
+    "enabled": false,
+    "v_noise_std": 0.0,
+    "s_noise_std": 1e-05
+  },
+  "on_complete": true
+}

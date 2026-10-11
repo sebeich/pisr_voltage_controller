@@ -1,0 +1,10 @@
+Incremental Training Summary
+============================
+Slack bus: 7
+Final Iterations: 1020
+Final Mean Mag MAE: 0.001479
+Final Worst Mag Max: 0.002275
+Final Mean Ang MAE: 0.000262
+Final Worst Ang Max: 0.000895
+Worst Bus Final: 57
+Threshold: 0.001000  (Reached: false)
