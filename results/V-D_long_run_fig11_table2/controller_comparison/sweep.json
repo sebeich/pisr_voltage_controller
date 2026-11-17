@@ -1,8 +1,8 @@
 {
-  "base_url": "http://127.0.0.1:8000",
+  "base_url": "http://127.0.0.1:8022",
   "rate": 20,
   "start_row": 1000,
-  "duration": 3600.0,
+  "duration": 3600,
   "scenario_rate_hz": 1.0,
   "n_rows": 3600,
   "sweep_mode": "natural",
@@ -17,5 +17,6 @@
     "v_noise_std": 0.0,
     "s_noise_std": 1e-05
   },
+  "note": "OFF phase recorded concurrently on an identical twin instance (port 8021), see ../off_twin",
   "on_complete": true
 }

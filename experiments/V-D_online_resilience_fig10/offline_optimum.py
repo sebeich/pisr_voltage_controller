@@ -5,9 +5,10 @@ Uses the digital-twin network of the routed service, the recorded uncontrolled s
 bounds |dQ| <= 0.1 Mvar, 0 <= dP <= min(0.3 MW, feed-in), and |V| <= 1.05 p.u. at every energized
 low-voltage bus as hard constraint (SLSQP on the full AC power flow). In all recorded operating points
 the grid maximum is at bus 61, so constraining only the four prosumer buses gives the same optimum.
-    python offline_optimum.py <impedance_increase_recording.csv>
+    python offline_optimum.py <impedance_increase_recording.csv[.gz]> [out.json]
+Writes the result to out.json (default: results/V-D_impedance_increase/optimum/optimum.json).
 """
-import ast, copy, os, sys
+import ast, copy, json, os, sys
 import numpy as np, pandas as pd
 from scipy.optimize import minimize
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -16,7 +17,10 @@ import realtime_powerflow_service_routed_apicontrolled as svc
 
 BUSES = [64, 57, 55, 61]; CTRL = [64, 57, 55]; WP = 30.0; QLIM = 0.1; PLIM = 0.3; VLIM = 1.05
 
-def main(rec_csv):
+def main(rec_csv, out_json=None):
+    rec_csv = os.path.abspath(rec_csv)
+    out_json = os.path.abspath(out_json) if out_json else os.path.join(ROOT, "results", "V-D_impedance_increase", "optimum", "optimum.json")
+    result = {}
     os.chdir(ROOT)
     rtp = svc.RealTimePowerflow(os.path.join("data", "grid", "coses_matpower_source.xlsx"),
                                 os.path.join("data", "scenarios", "scenarios_correlated_pv_rt.csv"))
@@ -41,6 +45,14 @@ def main(rec_csv):
                        constraints=[{"type": "ineq", "fun": lambda x: VLIM - volts(x)}], options={"ftol": 1e-12, "maxiter": 500})
         print(f"{phase}: J={res.fun:.6f} sum dQ={res.x[1::2].sum()*1e3:.1f} kvar sum dP={res.x[0::2].sum()*1e3:.2f} kW "
               f"max V={volts(res.x).max():.4f} p.u. ({len(sup)} LV buses constrained) success={res.success}")
+        result[phase] = {"J": float(res.fun), "Q_kvar": float(res.x[1::2].sum() * 1e3), "P_kW": float(res.x[0::2].sum() * 1e3),
+                         "vmax_pu": float(volts(res.x).max()), "success": bool(res.success),
+                         "dP_mw": {str(b): float(res.x[2 * i]) for i, b in enumerate(CTRL)},
+                         "dQ_mvar": {str(b): float(res.x[2 * i + 1]) for i, b in enumerate(CTRL)}}
+    os.makedirs(os.path.dirname(out_json), exist_ok=True)
+    with open(out_json, "w") as fh:
+        json.dump({"source": os.path.relpath(rec_csv, ROOT), "w_P": WP, "q_limit_mvar": QLIM, "p_limit_mw": PLIM, "v_limit_pu": VLIM, "phases": result}, fh, indent=2)
+    print("saved", out_json)
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)

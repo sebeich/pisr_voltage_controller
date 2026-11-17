@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Figs. 12 and 13: PHiL validation of the PISR controller in the CoSES laboratory grid.
+"""Figs. 13 and 14: PHiL validation of the PISR controller in the CoSES laboratory grid.
 
 Input: the NI VeriStand logger exports of the PHiL test on 2025-10-07 (data/lab/*.csv, measurement channels only).
 
     .venv/bin/python experiments/V-E_phil_lab_fig12_fig13/plot_fig12_fig13.py [--slow CSV] [--fast CSV] [--out DIR]
 
-  --slow  log at 100 Hz with the controller repeatedly enabled/disabled  -> Fig. 12
-  --fast  log at 1 kHz around one controller activation                -> Fig. 13 (samples 1800-2100)
+  --slow  log at 100 Hz with the controller repeatedly enabled/disabled  -> Fig. 13
+  --fast  log at 1 kHz around one controller activation                -> Fig. 14 (samples 1800-2100)
 
 Voltages are phase-peak values (S_EU_Mag_A / (sqrt(2) * 230 V)); amplifier powers are per phase (x3).
 """
@@ -81,8 +81,8 @@ def plot_test_data(df, out_stem: Path, figsize, sr, voltage_limit=None, enables=
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--slow", type=Path, default=ROOT / "data" / "lab" / "105setpoint.csv", help="Fig. 12 log")
-    ap.add_argument("--fast", type=Path, default=ROOT / "data" / "lab" / "105setpoint_high_speed.csv", help="Fig. 13 log")
+    ap.add_argument("--slow", type=Path, default=ROOT / "data" / "lab" / "105setpoint.csv", help="Fig. 13 log")
+    ap.add_argument("--fast", type=Path, default=ROOT / "data" / "lab" / "105setpoint_high_speed.csv", help="Fig. 14 log")
     ap.add_argument("--out", type=Path, default=ROOT / "results" / "V-E_phil_lab_fig12_fig13")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)

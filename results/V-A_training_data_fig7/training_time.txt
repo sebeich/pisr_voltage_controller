@@ -1,0 +1,18 @@
+Training time of the Fig. 7 high-variability model (Sec. III-C)
+Machine: Intel Core i5-14500, 20 logical CPUs, 31.7 GB, Windows 11; Julia 1.12.6 started with --threads=auto (20 threads)
+Settings: src/pisr/incremental_noslack.jl defaults, TRAIN_CSV=data/offline/train_data_complex_var.csv (100 rows), 5 targets, 20 + 10 x 100 = 1020 iterations
+Timed: each fit!(mach) call separately with time(); a 1-iteration warm-up fit ran first, so Julia start-up and compilation are excluded.
+
+[train-time] iter=20 step_s=38.3 cum_s=38.3 threads=20
+[train-time] iter=120 step_s=192.6 cum_s=230.9
+[train-time] iter=220 step_s=184.6 cum_s=415.5
+[train-time] iter=320 step_s=183.2 cum_s=598.7
+[train-time] iter=420 step_s=175.9 cum_s=774.6
+[train-time] iter=520 step_s=165.4 cum_s=940.0
+[train-time] iter=620 step_s=164.0 cum_s=1104.0
+[train-time] iter=720 step_s=157.1 cum_s=1261.1
+[train-time] iter=820 step_s=159.6 cum_s=1420.7
+[train-time] iter=920 step_s=156.9 cum_s=1577.5
+[train-time] iter=1020 step_s=155.9 cum_s=1733.5
+
+Total training time: 1733.5 s

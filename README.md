@@ -15,14 +15,15 @@ Every result of Sections IV and V has one folder in `experiments/` and writes to
 | Sec. V-B, Fig. 8 | 10×10 cross-evaluation | `experiments/V-B_training_robustness_fig8` | `experiments/V-B_training_robustness_fig8/run.sh plot` | seconds |
 | Sec. V-C, Fig. 9 + speed | offline optimization, PISR vs. power flow | `experiments/V-C_offline_control_fig9` | `experiments/V-C_offline_control_fig9/run.sh` | ~2 min |
 | Sec. V-D, Fig. 10 | CIL: disturbance, topology change, noise | `experiments/V-D_online_resilience_fig10` | `experiments/V-D_online_resilience_fig10/run.sh` | ~5 min |
+| Sec. V-D, Table 4, Fig. 12 | impedance increase, local Q(U) droop, least accurate model, offline optimum | `experiments/V-D_online_resilience_fig10` | `run_impedance_increase.sh run_06` (and `run_09`), then `offline_optimum.py` and `summarize_table4.py` | ~15 min per model |
 | Sec. V-D, Fig. 11, Table 3 | long randomized CIL run | `experiments/V-D_long_run_fig11_table2` | `experiments/V-D_long_run_fig11_table2/run.sh fig11` | ~2 h |
-| Sec. V-E, Figs. 12–13 | PHiL laboratory validation | `experiments/V-E_phil_lab_fig12_fig13` | `experiments/V-E_phil_lab_fig12_fig13/run.sh` (from the lab recordings) | seconds |
+| Sec. V-E, Figs. 13–14 | PHiL laboratory validation | `experiments/V-E_phil_lab_fig12_fig13` | `experiments/V-E_phil_lab_fig12_fig13/run.sh` (from the lab recordings) | seconds |
 
 All commands are run from the repository root. Every solver, optimizer and training setting is listed in [docs/SETTINGS.md](docs/SETTINGS.md).
 
 ## Installation
 
-Requirements: Linux or macOS, Julia 1.12 (tested 1.12.6), Python 3.12, and `curl`.
+Requirements: Linux, macOS or Windows; Julia 1.12 (tested 1.12.6), Python 3.12, `curl`, and bash for the `*.sh` drivers (Git Bash or WSL on Windows). The reference results in `results/` were recorded on Windows 11 (Intel Core i5-14500, 20 threads); see [docs/SPEED_BENCHMARK.md](docs/SPEED_BENCHMARK.md).
 
 ```bash
 # Python (digital twin, power flow, plots)
@@ -45,7 +46,7 @@ data/
     scenarios_correlated_pv.csv      correlated profiles (rho ~ 0.85)
     scenarios_correlated_pv_rt.csv   correlated profiles replayed by the real-time digital twin
   offline/                           offline training/test sets (Sec. IV-A, Figs. 3, 7, 9)
-  lab/                               PHiL recordings of 2025-10-07 (NI VeriStand logger, measurement channels, Figs. 12, 13)
+  lab/                               PHiL recordings of 2025-10-07 (NI VeriStand logger, measurement channels, Figs. 13, 14)
 models/                              trained PISR models used in the paper
   offline_correlated/, offline_highvar/   Fig. 7 (offline_highvar is also the Fig. 9 model)
   cross_eval/runs/run_01..run_10/         Fig. 8: datasets collected over the REST API + one model each
@@ -154,6 +155,23 @@ experiments/V-D_online_resilience_fig10/run.sh
 - The controllers run at 10 Hz (`LOOP_PERIOD_S=0.1`, optimizer budget 0.05 s) and the plant at 20 Hz. Settings are in `controller_params.env`.
 - To run the stack interactively, start `run_routed_stack.sh` and open `http://127.0.0.1:8012/ui`.
 
+### Sec. V-D — impedance increase, local Q(U) droop and offline optimum (Table 4, Fig. 12)
+
+```bash
+experiments/V-D_online_resilience_fig10/run_impedance_increase.sh run_06
+MODES="Uncontrolled,Robust Sensitivity,PISR" experiments/V-D_online_resilience_fig10/run_impedance_increase.sh run_09
+.venv/bin/python experiments/V-D_online_resilience_fig10/offline_optimum.py results/V-D_impedance_increase/run_06/impedance_increase_recording.csv.gz
+.venv/bin/python experiments/V-D_online_resilience_fig10/summarize_table4.py   # Table 4 values, settling times, cost vs. optimum
+```
+
+- Models identified on the ring topology (breaker Q1/K4 closed): `models/cross_eval/runs/run_06` (most accurate of Fig. 8) and `run_09` (least accurate). The sensitivity benchmark is identified from the same 50 training samples.
+- Sequence: the ΔP = −50 kW, ΔQ = −50 kvar step on bus 61, held for 20 s, first on the ring, then after opening Q1 (unmodeled impedance increase); three repetitions.
+- Local Q(U) droop (`QUDroop` in `sequence_impedance_increase.py`): each controllable inverter follows the standard characteristic on its own bus voltage (dead band 0.97–1.03 p.u., full reactive power at 0.93/1.07 p.u., first-order lag with 3τ = 10 s), Qmax = `QLIMIT` = 100 kvar, no active-power curtailment.
+- Outputs: `results/V-D_impedance_increase/run_06|run_09/impedance_increase_summary.{csv,json}` (steady state over the last 3 s of each step), the recordings (`.csv.gz`) and Fig. 12 (`run_06/impedance_increase_comparison.eps`). `summarize_table4.py` writes `table4_means.csv` (Table 4), `table4_settling_times.csv` and `optimum/table4_optimum_comparison.csv` (cost (1) of each controller relative to the optimum).
+- `offline_optimum.py` computes the minimum of cost (1) for the recorded operating points with the full network model (SLSQP on the AC power flow, same weights and bounds, |V| ≤ 1.05 p.u. at every energized LV bus) and writes `results/V-D_impedance_increase/optimum/optimum.json`.
+- `diag_noise_repeats.py` repeats the Fig. 10 step 32 times (8 each without noise, with voltage and power noise, voltage noise only, power noise only) to count the short double-increment transients; result in `results/V-D_online_resilience_fig10/noise_repeats/`.
+- Fig. 10 itself was re-recorded three times; recordings 2 and 3 and their steady-state comparison with the original recording are in `results/V-D_online_resilience_fig10/repeats/`.
+
 ### Sec. V-D — long randomized run (Fig. 11, Table 3)
 
 ```bash
@@ -164,19 +182,20 @@ FIG11_DURATION=60 experiments/V-D_long_run_fig11_table2/run.sh fig11   # smoke t
 
 - Setup: a −40 kW offset on uncontrolled bus 61, measurement noise off, breaker open. The scenario rows advance at 1 Hz, which gives one random P/Q event per second at the uncontrolled nodes.
 - Fig. 11 replays the full 3600-row table starting at row 1000 (wrapping around) once without and once with the controller, about 72 000 samples per phase. Its statistics are in `results/V-D_long_run_fig11_table2/controller_comparison/comparison.stats.json`; the raw recordings are shipped as `off.csv.gz` / `on.csv.gz`.
+- The shipped recording was made with the OFF and ON phases running concurrently on two identical digital-twin instances replaying the same rows (`sweep_off.json`, `sweep.json`); `run.sh fig11` records them one after the other on one instance.
 - Table 3 of the paper is computed from this Fig. 11 comparison run. Its values are under `runs["PISR ON"]` in `comparison.stats.json`; `runs["Controller OFF"]` gives the uncontrolled baseline:
   - `high_sampling.voltage_error_pu.mean`, `voltage_rmse_pu` and `overvoltage_pu.max`
   - `violation_comparison.without_block.error_during_violations_pu`
   - `high_sampling.dP_mw` / `dQ_mvar` means
 
-### Sec. V-E — PHiL laboratory validation (Figs. 12, 13)
+### Sec. V-E — PHiL laboratory validation (Figs. 13, 14)
 
 ```bash
-experiments/V-E_phil_lab_fig12_fig13/run.sh   # Figs. 12 and 13 from data/lab/105setpoint*.csv
+experiments/V-E_phil_lab_fig12_fig13/run.sh   # Figs. 13 and 14 from data/lab/105setpoint*.csv
 ```
 
-- Fig. 12 uses `105setpoint.csv`, logged at 100 Hz, with the controller enabled and disabled several times.
-- Fig. 13 uses `105setpoint_high_speed.csv`, logged at 1 kHz, samples 1800–2100 around one activation.
+- Fig. 13 uses `105setpoint.csv`, logged at 100 Hz, with the controller enabled and disabled several times.
+- Fig. 14 uses `105setpoint_high_speed.csv`, logged at 1 kHz, samples 1800–2100 around one activation.
 
 The live experiment drives the CoSES laboratory hardware: an NI VeriStand gateway over OPC UA and EGSTON power amplifiers. It cannot be run without the lab. The scripts are the versions used on 2025-10-07:
 
@@ -186,20 +205,23 @@ The live experiment drives the CoSES laboratory hardware: an NI VeriStand gatewa
 | 2. Collect training data on the hardware and train PISR | `coses_train_from_api.jl` |
 | 3. Retrain from a collected CSV | `incremental_training_coses.jl` (default `TRAIN_CSV=models/phil_lab/train_data_complex.csv`) |
 | 4. PISR controller: 10 Hz, limit 1.05 p.u., buses SF1/SF4/SF6; enable/disable via `POST :8081/controller/{enable,disable}` | `pisr_controller.jl` (default `MODEL_PATH=models/phil_lab/final_model_iter1020.jls`) |
-| 5. Figs. 12 and 13 from the logs | `plot_fig12_fig13.py` |
+| 5. Figs. 13 and 14 from the logs | `plot_fig12_fig13.py` |
 
 `models/phil_lab/` is the model used in the lab, trained on 100 radial-topology samples collected on the hardware. It was serialized on the lab PC with Julia 1.11.6 and an older SymbolicRegression release, so it does not load with the package versions in `Manifest.toml`. It is included as a record of the experiment.
 
 ## Reference results
 
-These values come from running the repository on a 32-thread Linux workstation.
+These values come from running the repository on a Windows 11 workstation (Intel Core i5-14500, 20 threads). The second machine named in Sec. V-C (AMD Ryzen AI Max+ PRO 395, 32 threads, Linux) gave the timings in `results/V-C_offline_control_fig9/second_machine_amd_linux/`.
 
 | Result | Value |
 |---|---|
 | Fig. 8 off-diagonal magnitude MAE | 3.5e-4 – 2.7e-3 p.u. |
 | Fig. 9 controlled max \|V57\| | 1.0514 |
-| Time per evaluation, PISR / `runpp` (in-process, `run.sh bench`) | Julia 2.2 µs / 4.67 ms, 2110×; Python vs. Python 618× |
-| Fig. 11 / Table 3, PISR ON: mean error / RMSE / max overvoltage | −0.00027 / 0.00221 / 0.01281 p.u. |
+| Time per evaluation, PISR / `runpp` (in-process, `run.sh bench`) | Julia 4.39 µs / 17.4 ms, 3966×; Python vs. Python 563× (second machine: 2.2 µs / 4.67 ms, 2110×; 618×) |
+| Fig. 9 optimization, objective evaluations per 100 ms decision (median) | 17 666 |
+| Fig. 11 / Table 3, PISR ON: mean error / RMSE / max overvoltage | −0.00029 / 0.00230 / 0.01675 p.u. |
+| Table 4, ring / radial max \|V\|, PISR model 06 | 1.0502 / 1.0604 p.u. (optimum 88.5 / 119.8 kvar) |
+| Training time, `offline_highvar` settings (1020 iterations, 20 threads, compilation excluded) | 1734 s (`results/V-A_training_data_fig7/training_time.txt`) |
 
 ## Determinism
 

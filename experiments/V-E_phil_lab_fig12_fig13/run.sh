@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Section V-E (Figs. 12, 13): PHiL validation in the CoSES laboratory.
+# Section V-E (Figs. 13, 14): PHiL validation in the CoSES laboratory.
 #
-#   experiments/V-E_phil_lab_fig12_fig13/run.sh           # Figs. 12 and 13 from the lab recordings (data/lab)
+#   experiments/V-E_phil_lab_fig12_fig13/run.sh           # Figs. 13 and 14 from the lab recordings (data/lab)
 #
 # The live experiment itself needs the laboratory (see README, Sec. V-E).
 set -euo pipefail

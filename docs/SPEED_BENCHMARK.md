@@ -42,21 +42,30 @@ The speed-up is the ratio of the time per inner evaluation, because the number o
   - `runpp`: 20 timed repetitions per input.
   - PISR in Python: 50 × 100 calls per input.
 - **Language-matched check:** the PISR equations are exported from Julia and evaluated as plain Python complex arithmetic. This gives a Python-vs-Python ratio in addition to the deployed Julia path. The script asserts that both evaluations agree to 1e-9.
-- **Execution:** single process, single thread, CPU governor set to `performance`.
+- **Execution:** single process, single thread (CPU governor `performance` on Linux).
 
 ## Hardware and software
 
-| | |
-|---|---|
-| CPU | AMD Ryzen AI MAX+ PRO 395 (16 cores / 32 threads, up to 5.19 GHz, 64 MB L3) |
-| Memory | 32 GB (31 GiB usable) |
-| OS | Ubuntu 24.04.4 LTS, Linux 6.17 |
-| Python stack | Python 3.12.3, pandapower 3.4.0, numba 0.65.1, numpy 2.3.5, scipy 1.16.3 |
-| Julia stack | Julia 1.12.6, SymbolicRegression.jl 1.12.0, DynamicExpressions.jl 1.10.3, BlackBoxOptim.jl 0.6.3, BenchmarkTools.jl 1.6.3 |
+| | Workstation (paper, Table 2) | Second machine (Sec. V-C) |
+|---|---|---|
+| CPU | Intel Core i5-14500 (14 cores / 20 threads) | AMD Ryzen AI MAX+ PRO 395 (16 cores / 32 threads, up to 5.19 GHz, 64 MB L3) |
+| Memory | 32 GB (31.7 GB usable) | 32 GB (31 GiB usable) |
+| OS | Windows 11 (10.0.26200) | Ubuntu 24.04.4 LTS, Linux 6.17 |
+| Python stack | Python 3.12.16, pandapower 3.4.0, numba 0.65.1, numpy 2.3.5, scipy 1.16.3 | Python 3.12.3, pandapower 3.4.0, numba 0.65.1, numpy 2.3.5, scipy 1.16.3 |
+| Julia stack | Julia 1.12.6, SymbolicRegression.jl 1.12.0, BenchmarkTools.jl 1.6.3 | Julia 1.12.6, SymbolicRegression.jl 1.12.0, DynamicExpressions.jl 1.10.3, BlackBoxOptim.jl 0.6.3, BenchmarkTools.jl 1.6.3 |
 
 ## Results
 
-Measured on 2026-10-02 (`results/V-C_offline_control_fig9/benchmark_summary.json`). All values are per evaluation, i.e. one candidate setpoint.
+Workstation, measured on 2026-11-17 (`results/V-C_offline_control_fig9/benchmark_summary.json`). All values are per evaluation, i.e. one candidate setpoint.
+
+| Inner voltage model | Median time | p5–p95 | Speed-up vs. `runpp` |
+|---|---|---|---|
+| PISR, Julia `eval_tree_array` (controller path) | 4.39 µs | 4.31–4.55 µs | **3966×** |
+| PISR, plain Python (same runtime as pandapower) | 30.9 µs | | **563×** |
+| PISR, Julia `MLJ.predict` on a 1-row table (high-level API) | 94.9 µs | | 183× |
+| pandapower `runpp` (baseline) | 17.4 ms | 16.3–20.2 ms | 1× |
+
+Second machine, measured on 2026-10-02 (`results/V-C_offline_control_fig9/second_machine_amd_linux/benchmark_summary.json`):
 
 | Inner voltage model | Median time | p5–p95 | Speed-up vs. `runpp` |
 |---|---|---|---|
@@ -65,8 +74,10 @@ Measured on 2026-10-02 (`results/V-C_offline_control_fig9/benchmark_summary.json
 | PISR, Julia `MLJ.predict` on a 1-row table (high-level API) | 34.3 µs | | 136× |
 | pandapower `runpp` (baseline) | 4.67 ms | 4.64–4.72 ms | 1× |
 
+- The absolute times depend on the machine; the ratio within the same language (Python vs. Python) stays at about 600.
 - Accuracy of the PISR \|V\|max against the power flow on the same inputs: mean 6.4e-04 p.u., max 1.3e-03 p.u.
-- The machine was otherwise idle, apart from an unrelated background service that used about 5 of the 32 hardware threads. The benchmark itself runs single-threaded. A run during a concurrent CIL experiment gave similar ratios (627× Python vs. Python, 2577× Julia).
+- On the workstation, the offline optimization of Fig. 9 performs a median of 17 666 objective evaluations within its 100 ms budget per test sample (`results/V-C_offline_control_fig9/pisr/optimization_timing.csv`); with `runpp` as inner model, the same budget allows about six evaluations.
+- The CPU governor setting `performance` applies to the Linux machine; on Windows the default power plan was used. Both benchmarks run single-threaded.
 
 ## Notes
 

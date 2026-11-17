@@ -15,8 +15,9 @@ FIGS=(
   results/V-C_offline_control_fig9/Controlled_PF_V57_comparison.eps                    # Fig. 9
   results/V-D_online_resilience_fig10/sequence_breaker_noise_comparison.eps            # Fig. 10
   results/V-D_long_run_fig11_table2/controller_comparison/comparison.eps               # Fig. 11
-  results/V-E_phil_lab_fig12_fig13/CoSES_PHiL_Validation_PISR_Controller_Operation.eps        # Fig. 12
-  results/V-E_phil_lab_fig12_fig13/CoSES_PHiL_Validation_PISR_Controller_Operation_Short.eps  # Fig. 13
+  results/V-D_impedance_increase/run_06/impedance_increase_comparison.eps               # Fig. 12
+  results/V-E_phil_lab_fig12_fig13/CoSES_PHiL_Validation_PISR_Controller_Operation.eps        # Fig. 13
+  results/V-E_phil_lab_fig12_fig13/CoSES_PHiL_Validation_PISR_Controller_Operation_Short.eps  # Fig. 14
 )
 for src in "${FIGS[@]}"; do
   if [[ -f "$src" ]]; then cp "$src" "$OUT/"; echo "  $OUT/$(basename "$src")"
